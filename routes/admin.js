@@ -104,7 +104,15 @@ router.post('/categorias/deletar', (req, res) => {
 })
 
 router.get('/postagens', (req, res) => {
-    res.render("admin/postagens")
+
+    Postagem.find().lean().populate("categoria").sort({data: "desc"}).then((postagens) => {
+        res.render("admin/postagens", {postagens:postagens})
+    }).catch((err) => {
+        req.flash("error_msg", "Erro ao listar postagens. Tente novamente")
+        res.redirect("/admin")
+    })
+
+    
 })
 
 router.get('/postagens/add', (req, res) => {
@@ -151,5 +159,63 @@ router.post('/postagens/nova', (req, res) => {
    
 })
 
+
+router.get('/postagens/edit/:id', (req, res) => {
+
+
+    Postagem.findOne({_id: req.params.id}).lean().then((postagem) => {
+
+        Categoria.find().lean().then((categorias) => {
+
+            res.render("admin/editpostagens", {categorias: categorias, postagem: postagem})
+
+        }).catch((err) => {
+            req.flash("error_msg", "Erro ao listar categorias. Tente novamente")
+            res.redirect("/admin/postagens")
+        })
+        
+        //res.render("admin/editpostagens", {postagem: postagem})
+    }).catch((err) => {
+        req.flash("error_msg", "Erro ao carregar formulário de edição")
+        res.redirect("/admin/postagens")
+    })
+    
+})
+
+router.post('/postagens/edit', (req, res) => {
+
+    Postagem.updateOne({_id: req.body.id},{$set:{
+
+        titulo: req.body.titulo,
+        slug: req.body.slug,
+        descricao: req.body.descricao,
+        conteudo: req.body.conteudo,
+        categoria: req.body.categoria
+    
+    }}).then(() => {
+    
+            req.flash("success_msg", "Postagem editada com sucesso!")
+            res.redirect("/admin/postagens")
+        
+    
+    }).catch((err) => {
+        req.flash("error_msg", "Erro ao editar postagem. Tente novamente")
+        res.redirect("/admin/postagens")
+    })
+     
+})
+
+router.get('/postagens/deletar/:id', (req, res) => {
+    Postagem.deleteOne({_id: req.params.id}).then(() => {
+        req.flash("success_msg", "Postagem deletada com sucesso!")
+        res.redirect("/admin/postagens")
+    }
+
+      
+    ).catch((err) => {
+        req.flash("error_msg", "Erro ao deletar postagem. Tente novamente")
+        res.redirect("/admin/postagens")
+    })
+})
 
 module.exports = router
