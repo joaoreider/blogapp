@@ -1,0 +1,26 @@
+<div class="mt-4 p-5 bg-dark text-white rounded">
+  <h1>Bem vindo ao BlogAPP</h1>
+  <p>Crie uma conta</p>
+</div>
+
+<hr>
+
+<h2>Postagens recentes: </h2>
+
+
+{{#each postagens}}
+<div class="card mt-4 bg-primary " style="width: 36rem;">
+  <div class="card-body">
+    <h5 class="card-title">{{titulo}}</h5>
+    <p class="card-text">{{descricao}}</p>
+    <a href="/postagem/{{slug}}" class="card-link text-black rounded">Leia mais</a>
+    <hr>
+    <small>{{categoria.nome}}</small><br>
+    <small>{{data}}</small>
+    
+  </div>
+</div>
+
+{{else}}
+    <h5 class="card-title">Nenhuma postagem recente</h5>
+{{/each}}
