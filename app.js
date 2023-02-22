@@ -40,7 +40,7 @@ const flash = require('connect-flash')
     app.set('view engine', 'handlebars')
 
     // Mongoose
-    mongoose.connect("mongodb+srv://joaopauloj405:1412@node-express.c70sayb.mongodb.net/?").then(()=> {
+    mongoose.connect("mongodb+srv://joaopauloj405:1412@node-express.c70sayb.mongodb.net/?retryWrites=true&w=majority").then(()=> {
         console.log("Conexão com o banco feita com sucesso.")
     }).catch((err)=>{
         console.log("Erro ao se conectar no mongodb: " + err)

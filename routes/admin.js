@@ -3,7 +3,9 @@ const express = require("express")
 const router = express.Router()
 const mongoose = require('mongoose')
 require('../models/Categoria')
+require('../models/Postagem')
 const Categoria =  mongoose.model('categorias')
+const Postagem =  mongoose.model('postagens')
 
 
 router.get('/', (req, res) => {
@@ -58,5 +60,96 @@ router.post('/categorias/nova', (req, res) => {
 
     }
 })
+
+router.get('/categorias/edit/:id', (req, res) => {
+
+
+    Categoria.findOne({_id: req.params.id}).lean().then((categoria) => {
+        res.render("admin/editcategorias", {categoria: categoria})
+    }).catch((err) => {
+        req.flash("error_msg", "Essa categoria não existe")
+        res.redirect("/admin/categorias")
+    })
+    
+})
+
+router.post('/categorias/edit', (req, res) => {
+
+    Categoria.updateOne({_id: req.body.id},{$set:{nome:req.body.nome, slug:req.body.slug}}).then(() => {
+
+            req.flash("success_msg", "Categoria editada com sucesso!")
+            res.redirect("/admin/categorias")
+        
+    
+    }).catch((err) => {
+        req.flash("error_msg", "Erro ao editar categoria. Tente novamente")
+        console.log(err)
+        res.redirect("/admin/categorias")
+    })
+    
+})
+
+router.post('/categorias/deletar', (req, res) => {
+    Categoria.remove({_id: req.body.id}).then(() => {
+
+        req.flash("success_msg", "Categoria removida com sucesso!")
+        res.redirect("/admin/categorias")
+    
+
+    }).catch((err) => {
+        req.flash("error_msg", "Erro ao deletar categoria. Tente novamente")
+        console.log(err)
+        res.redirect("/admin/categorias")
+    })
+})
+
+router.get('/postagens', (req, res) => {
+    res.render("admin/postagens")
+})
+
+router.get('/postagens/add', (req, res) => {
+    Categoria.find().lean().then((categorias) => {
+        res.render("admin/addpostagens", {categorias: categorias})
+    }).catch((err) => {
+        req.flash("error_msg", "Erro ao carregar formulario. Tente novamente")
+        res.redirect("/admin")
+    })
+    
+})
+
+router.post('/postagens/nova', (req, res) => {
+
+    var erros = []
+
+    if (req.body.categoria == "0"){
+
+        erros.push({texto: "Registre uma categoria"})
+
+    }
+
+    if (erros.length > 0){
+        res.render("admin/addpostagens", {erros: erros})
+    }else{
+
+        const novaPostagem = {
+             titulo: req.body.titulo,
+             descricao: req.body.descricao,
+             conteudo: req.body.conteudo,
+             slug: req.body.titulo,
+             categoria: req.body.categoria
+
+        }
+        new Postagem(novaPostagem).save().then(() => {
+             req.flash("success_msg", "Postagem cadastrada com sucesso!")
+             res.redirect("/admin/postagens")
+        }).catch((err) => {
+             req.flash("error_msg", "Erro ao cadastrar postagem. Tente novamente")
+             res.redirect("/admin/postagens")
+        })
+ 
+     }
+   
+})
+
 
 module.exports = router
